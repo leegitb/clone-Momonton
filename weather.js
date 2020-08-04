@@ -1,4 +1,22 @@
+const weather = document.querySelector(".js-weather");
+
 const COORDS = "coords";
+const API_KEY = "f32f5fc18d0a6077735f05541ac6434b";
+
+function getWeather(latitude, longitude) {
+  fetch(
+    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`
+  )
+    .then((response) => {
+      return response.json();
+    })
+    .then((json) => {
+      //   console.log(json);
+      const temperature = json.main.temp;
+      const place = json.name;
+      weather.innerHTML = `${temperature} @ ${place}`;
+    }); // get data from weather api By geographic coordinates
+}
 
 function saveCoords(coordsObj) {
   localStorage.setItem(COORDS, JSON.stringify(coordsObj));
@@ -13,6 +31,7 @@ function handleGeoSuccess(position) {
     longitude,
   };
   saveCoords(coordsObj);
+  getWeather(latitude, longitude);
 }
 
 // 위치 권한 차단 시 발생
@@ -25,11 +44,14 @@ function askForCoords() {
 }
 
 function loadCoords() {
-  const loadCords = localStorage.getItem(COORDS);
-  if (loadCords === null) {
+  const loadedCoords = localStorage.getItem(COORDS);
+  if (loadedCoords === null) {
+    // 위치 좌표가 localStorage에 없을 때 발생
     askForCoords();
   } else {
-    // getWeather
+    // 위치 좌표가 localStorage에 존재할 때 발생
+    const parseCoords = JSON.parse(loadedCoords);
+    getWeather(parseCoords.latitude, parseCoords.longitude);
   }
 }
 
